@@ -1,6 +1,7 @@
 public class Vehicle {
     int length;
     int passengerCount;
+    int maxPassengerCount;
     int startPoint;
     int endPoint;
     double startTime;
@@ -18,6 +19,10 @@ public class Vehicle {
 
     public int getStartPoint() {
         return startPoint;
+    }
+
+    public int getMaxPassengers() {
+        return maxPassengerCount;
     }
 
     public double getDistanceTraveled() {

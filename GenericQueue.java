@@ -37,6 +37,15 @@ public class GenericQueue<T> {
         return (record.value);
     }
 
+    public T getHead() {
+        if (head == null) {
+            return (null);
+        } else {
+            QueueRecord record = head;
+            return record.value;
+        }
+    }
+
     public boolean isEmpty() {
         return (length == 0);
     }

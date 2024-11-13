@@ -1,11 +1,13 @@
 public class Simulation {
+    public Simulation(double input) {
+        totalTime = input;
+    }
+
     double currentTime = 0;
     double totalTime;
     double nextArrival;
     double nextMerge;
     double nextExit;
-    double waitingTime;
-    double targetWaitingTime;
     Highway highway = new Highway(100);
     OnRamp onRamp1 = new OnRamp();
     OffRamp offRamp1 = new OffRamp();

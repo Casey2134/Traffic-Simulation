@@ -1,5 +1,5 @@
 public class Vehicle {
-    int length;
+    int vehicleLength;
     int passengerCount;
     int maxPassengerCount;
     int startPoint;
@@ -33,6 +33,9 @@ public class Vehicle {
         return (distanceTraveled / totalTime);
     }
 
+    public int getVehicleLength() {
+        return vehicleLength;
+    }
 
     public void doUnitTests() {
         //.....

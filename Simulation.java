@@ -14,15 +14,22 @@ public class Simulation {
     private void doLoop() {
         while (currentTime <= totalTime) {
             // merges next vehicle
-            if (currentTime == nextMerge && onRamp1.nextVehicle() != null) {
-                if (onRamp1.nextVehicle().getVehicleLength() < highway.getRemainingSpace()) {
-                    highway.enqueue(onRamp1.dequeue());
+            if (currentTime == nextMerge) {
+                if (onRamp1.nextVehicle() != null) {
+                    if (onRamp1.nextVehicle().getVehicleLength() < highway.getRemainingSpace()) {
+                        highway.enqueue(onRamp1.dequeue());
+                        nextMerge = currentTime + exponential.sample();
+                    }
                 }
                 nextMerge = currentTime + exponential.sample();
+
             }
             // exits vehicle from the highway
-            if (currentTime == nextExit && highway.nextVehicle() != null) {
-                offRamp1.enqueue(highway.dequeue());
+            if (currentTime == nextExit) {
+                if (highway.nextVehicle() != null) {
+                    offRamp1.enqueue(highway.dequeue());
+
+                }
                 nextExit = currentTime + exponential.sample();
             }
             // adds vehicle to the on ramp
@@ -32,7 +39,7 @@ public class Simulation {
             }
 
             currentTime = getNextEvent();
-
+            System.out.println(currentTime);
         }
         getData(offRamp1);
     }

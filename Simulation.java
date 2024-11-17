@@ -26,12 +26,13 @@ public class Simulation {
         }
         // exits vehicle from the highway
         if (currentTime == nextExit && highway.nextVehicle() != null) {
+            highway.nextVehicle().arrived();
             offRamp1.enqueue(highway.dequeue());
             nextExit = currentTime + exponential.sample();
         }
         // adds vehicle to the on ramp
         if (currentTime == nextArrival) {
-            onRamp1.enqueue(arrival.getNextVehicle());
+            onRamp1.enqueue(arrival.getNextVehicle(currentTime));
             nextArrival = currentTime + exponential.sample();
         }
 

@@ -4,7 +4,7 @@ public class Simulation {
     double nextArrival;
     double nextMerge;
     double nextExit;
-    Highway highway = new Highway(100);
+    Highway highway = new Highway(10000);
     OnRamp onRamp1 = new OnRamp();
     OffRamp offRamp1 = new OffRamp();
     Arrival arrival = new Arrival();
@@ -41,7 +41,6 @@ public class Simulation {
             }
 
             currentTime = getNextEvent();
-            System.out.println(currentTime);
         }
         getData(offRamp1);
     }

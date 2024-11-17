@@ -12,7 +12,7 @@ public class Simulation {
     Exponential exponential = new Exponential(0.5);
 
     private void doLoop() {
-        while (currentTime <= totalTime) {
+        while (currentTime < totalTime) {
             // merges next vehicle
             if (currentTime == nextMerge) {
                 if (onRamp1.nextVehicle() != null) {
@@ -27,6 +27,8 @@ public class Simulation {
             // exits vehicle from the highway
             if (currentTime == nextExit) {
                 if (highway.nextVehicle() != null) {
+                    highway.nextVehicle().setDistanceTraveled(highway.getLength());
+                    highway.nextVehicle().setEndTime(currentTime);
                     offRamp1.enqueue(highway.dequeue());
 
                 }

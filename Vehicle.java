@@ -9,7 +9,6 @@ public class Vehicle {
     double totalTime;
     double distanceTraveled;
 
-
     public Vehicle(int passengerCount, int startPoint, int endPoint, double startTime) {
         this.passengerCount = passengerCount;
         this.startPoint = startPoint;
@@ -19,6 +18,17 @@ public class Vehicle {
 
     public int getStartPoint() {
         return startPoint;
+    }
+
+    public int getEndPoint() {
+        return endPoint;
+    }
+
+    public void dequeue(int endPoint, double currentTime) {
+        this.endPoint = endPoint;
+        distanceTraveled = endPoint - startPoint;
+        endTime = currentTime;
+        totalTime = endTime - startTime;
     }
 
     public int getMaxPassengers() {
@@ -36,6 +46,7 @@ public class Vehicle {
     public int getVehicleLength() {
         return vehicleLength;
     }
+
 
     public void doUnitTests() {
         //.....

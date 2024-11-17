@@ -9,7 +9,6 @@ public class Vehicle {
     double totalTime;
     double distanceTraveled;
 
-
     public Vehicle(int passengerCount, int startPoint, int endPoint, double startTime) {
         this.passengerCount = passengerCount;
         this.startPoint = startPoint;
@@ -38,7 +37,11 @@ public class Vehicle {
     }
 
     public void doUnitTests() {
-        //.....
+        // .....
+    }
+
+    public int getPassengers() {
+        return passengerCount;
     }
 
 }

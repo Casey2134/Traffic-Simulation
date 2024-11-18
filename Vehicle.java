@@ -27,6 +27,10 @@ public class Vehicle {
         return maxPassengerCount;
     }
 
+    public double getStartTime() {
+        return startTime;
+    }
+
     public double getDistanceTraveled() {
         return distanceTraveled;
     }

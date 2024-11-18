@@ -18,7 +18,7 @@ public class Simulation {
                 if (onRamp1.nextVehicle() != null) {
                     if (onRamp1.nextVehicle().getVehicleLength() < highway.getRemainingSpace()) {
                         highway.enqueue(onRamp1.dequeue());
-                        nextMerge = currentTime + exponential.sample();
+                        nextMerge = currentTime + 3;
                     }
                 }
                 nextMerge = currentTime + exponential.sample();
@@ -32,7 +32,13 @@ public class Simulation {
                     offRamp1.enqueue(highway.dequeue());
 
                 }
-                nextExit = currentTime + exponential.sample();
+                if (highway.nextVehicle() == null) {
+                    nextExit = nextMerge + (highway.getLength() / 95.333);
+                } else if (highway.nextVehicle().getStartTime() + (highway.getLength() / 95.3333) < currentTime) {
+                    nextExit = highway.nextVehicle().getStartTime() + (highway.getLength() / 95.3333);
+                } else {
+                    nextExit = currentTime + 3;
+                }
             }
             // adds vehicle to the on ramp
             if (currentTime == nextArrival) {
@@ -48,8 +54,8 @@ public class Simulation {
     public void run(double input) {
         totalTime = input;
         nextArrival = currentTime + exponential.sample();
-        nextMerge = nextArrival + exponential.sample();
-        nextExit = nextMerge + exponential.sample();
+        nextMerge = nextArrival + 3;
+        nextExit = nextMerge + 120;
         doLoop();
 
     }
@@ -89,8 +95,9 @@ public class Simulation {
             numOfVehicles++;
 
         }
-        System.out.println("Average distance travelled: " + averageDistanceTotal / averageDistanceValues);
-        System.out.println("Average speed: " + averageSpeedTotal / averageSpeedValues);
+        System.out.println(
+                "Average distance travelled: " + (averageDistanceTotal / averageDistanceValues) / 5280 + " miles");
+        System.out.println("Average speed: " + (averageSpeedTotal / averageSpeedValues) * 0.68 + " mph");
         System.out.println("Total vehicles: " + numOfVehicles);
         System.out.println("Number of cars: " + numOfCars);
         System.out.println("Number of busses: " + numOfBusses);

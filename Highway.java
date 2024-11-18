@@ -24,7 +24,7 @@ public class Highway {
 
     // Method to enqueue a vehicle onto the highway if there's enough space
     public boolean enqueue(Vehicle vehicle) {
-        double vehicleLength = vehicle.getLength();
+        double vehicleLength = vehicle.getVehicleLength();
         if (vehicleLength <= remainingSpace) {
             lane.add(vehicle);
             remainingSpace -= vehicleLength;
@@ -39,7 +39,7 @@ public class Highway {
             return null;
         }
         Vehicle exitingVehicle = lane.removeFirst();
-        remainingSpace += exitingVehicle.getLength(); // Free up space
+        remainingSpace += exitingVehicle.getVehicleLength(); // Free up space
         return exitingVehicle;
     }
 
@@ -59,9 +59,9 @@ public class Highway {
     // Unit test for the Highway class
     public static void unitTest() {
         Highway highway = new Highway(500); // Highway of 500 feet
-        Vehicle car1 = new Car(1, 5); // Car with 1 passenger
-        Vehicle car2 = new Car(2, 3); // Car with 2 passengers
-        Vehicle bus1 = new Bus(3, 15); // Bus with 15 passengers
+        Vehicle car1 = new Car(1, 5, 1, 1); // Car with 1 passenger
+        Vehicle car2 = new Car(2, 3, 1, 1); // Car with 2 passengers
+        Vehicle bus1 = new Bus(3, 15, 1, 1); // Bus with 15 passengers
 
         // Test: Add vehicles to the highway
         System.out.println("Enqueue Car 1: " + highway.enqueue(car1)); // Expected: true
@@ -77,6 +77,7 @@ public class Highway {
         // Test: Dequeue a vehicle and check remaining space
         Vehicle exitedVehicle = highway.dequeue();
         System.out.println("Dequeued Vehicle: " + exitedVehicle);
-        System.out.println("Remaining Space: " + highway.getRemainingSpace()); // Should reflect space after removing car1
+        System.out.println("Remaining Space: " + highway.getRemainingSpace()); // Should reflect space after removing
+                                                                               // car1
     }
 }

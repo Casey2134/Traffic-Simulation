@@ -19,11 +19,16 @@ public class Vehicle {
         return startPoint;
     }
 
+    public int getEndPoint() {
+        return endPoint;
+    }
+
     public void setDistanceTraveled(double input) {
         distanceTraveled = input;
     }
 
     public static int getMaxPassengers() {
+
         return maxPassengerCount;
     }
 

@@ -1,12 +1,11 @@
 public class Vehicle {
     int vehicleLength;
     int passengerCount;
-    int maxPassengerCount;
+    static int maxPassengerCount;
     int startPoint;
     int endPoint;
     double startTime;
     double endTime;
-    double totalTime;
     double distanceTraveled;
 
     public Vehicle(int passengerCount, int startPoint, int endPoint, double startTime) {
@@ -19,7 +18,6 @@ public class Vehicle {
     public int getStartPoint() {
         return startPoint;
     }
-
     public int getEndPoint() {
         return endPoint;
     }
@@ -31,16 +29,29 @@ public class Vehicle {
         totalTime = endTime - startTime;
     }
 
-    public int getMaxPassengers() {
+    public void setDistanceTraveled(double input) {
+        distanceTraveled = input;
+    }
+
+    public static int getMaxPassengers() {
+
         return maxPassengerCount;
+    }
+
+    public double getStartTime() {
+        return startTime;
     }
 
     public double getDistanceTraveled() {
         return distanceTraveled;
     }
 
+    public void setEndTime(double input) {
+        endTime = input;
+    }
+
     public double getAverageSpeed() {
-        return (distanceTraveled / totalTime);
+        return (distanceTraveled / getTotalTime());
     }
 
     public int getVehicleLength() {
@@ -48,8 +59,18 @@ public class Vehicle {
     }
 
 
+
+    public double getTotalTime() {
+        return endTime - startTime;
+    }
+
+
     public void doUnitTests() {
-        //.....
+        // .....
+    }
+
+    public int getPassengers() {
+        return passengerCount;
     }
 
 }

@@ -18,15 +18,9 @@ public class Vehicle {
     public int getStartPoint() {
         return startPoint;
     }
+
     public int getEndPoint() {
         return endPoint;
-    }
-
-    public void dequeue(int endPoint, double currentTime) {
-        this.endPoint = endPoint;
-        distanceTraveled = endPoint - startPoint;
-        endTime = currentTime;
-        totalTime = endTime - startTime;
     }
 
     public void setDistanceTraveled(double input) {
@@ -58,12 +52,9 @@ public class Vehicle {
         return vehicleLength;
     }
 
-
-
     public double getTotalTime() {
         return endTime - startTime;
     }
-
 
     public void doUnitTests() {
         // .....

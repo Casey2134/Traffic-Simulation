@@ -4,7 +4,7 @@ public class Simulation {
     double nextArrival;
     double nextMerge;
     double nextExit;
-    Highway highway = new Highway(10000);
+    Lane lane = new Lane(10000);
     OnRamp onRamp1 = new OnRamp();
     OffRamp offRamp1 = new OffRamp();
     Arrival arrival = new Arrival();
@@ -16,8 +16,8 @@ public class Simulation {
             // merges next vehicle
             if (currentTime == nextMerge) {
                 if (onRamp1.nextVehicle() != null) {
-                    if (onRamp1.nextVehicle().getVehicleLength() < highway.getRemainingSpace()) {
-                        highway.enqueue(onRamp1.dequeue());
+                    if (onRamp1.nextVehicle().getVehicleLength() < lane.getRemainingSpace()) {
+                        lane.enqueue(onRamp1.dequeue());
                         nextMerge = currentTime + 3;
                     }
                 }
@@ -26,16 +26,16 @@ public class Simulation {
             }
             // exits vehicle from the highway
             if (currentTime == nextExit) {
-                if (highway.nextVehicle() != null) {
-                    highway.nextVehicle().setDistanceTraveled(highway.getLength());
-                    highway.nextVehicle().setEndTime(currentTime);
-                    offRamp1.enqueue(highway.dequeue());
+                if (lane.nextVehicle() != null) {
+                    lane.nextVehicle().setDistanceTraveled(lane.getLength());
+                    lane.nextVehicle().setEndTime(currentTime);
+                    offRamp1.enqueue(lane.dequeue());
 
                 }
-                if (highway.nextVehicle() == null) {
-                    nextExit = nextMerge + (highway.getLength() / 95.333);
-                } else if (highway.nextVehicle().getStartTime() + (highway.getLength() / 95.3333) < currentTime) {
-                    nextExit = highway.nextVehicle().getStartTime() + (highway.getLength() / 95.3333);
+                if (lane.nextVehicle() == null) {
+                    nextExit = nextMerge + (lane.getLength() / 95.333);
+                } else if (lane.nextVehicle().getStartTime() + (lane.getLength() / 95.3333) < currentTime) {
+                    nextExit = lane.nextVehicle().getStartTime() + (lane.getLength() / 95.3333);
                 } else {
                     nextExit = currentTime + 3;
                 }

@@ -27,11 +27,11 @@ public class Arrival {
         Vehicle vehicle;
         int passengers;
         if (random.nextInt(100) > 30) { // For now, it is an 90% chance to be a car and a 10% chance to be a bus
-            n = new Normal(2.5, 1);
+            n = new Normal((Car.getMaxPassengers() / 2), 1);
             passengers = (int) n.sample();
             vehicle = new Car(passengers, 1, 1, currentTime); // passengers, start point, destination
         } else {
-            n = new Normal(11, 1);
+            n = new Normal((Bus.getMaxPassengers() / 2), 1);
             passengers = (int) n.sample();
             vehicle = new Bus(passengers, 1, 1, currentTime); // passengers, start point, destination
         }

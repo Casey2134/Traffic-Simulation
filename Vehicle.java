@@ -1,7 +1,7 @@
 public class Vehicle {
     int vehicleLength;
     int passengerCount;
-    int maxPassengerCount;
+    static int maxPassengerCount;
     int startPoint;
     int endPoint;
     double startTime;
@@ -23,7 +23,7 @@ public class Vehicle {
         distanceTraveled = input;
     }
 
-    public int getMaxPassengers() {
+    public static int getMaxPassengers() {
         return maxPassengerCount;
     }
 

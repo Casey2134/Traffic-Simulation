@@ -1,14 +1,20 @@
 public class Highway {
     private final Lane leftLane;
-    private final Lane righLane;
+    private final Lane rightLane;
     private final Ramp ramp;
     private final boolean hasOnRamp;
     private final double length; // Total length of the highway in feet
+    private double nextArrival;
+    private double nextMerge;
+    private double nextExitToOffRamp;
+    private double nextExitLane1;
+    private double nextExitLane2;
+    public double index;
 
     // Constructor
     public Highway(double length, boolean hasOnRamp) {
         this.leftLane = new Lane(length);
-        this.righLane = new Lane(length);
+        this.rightLane = new Lane(length);
         this.ramp = new Ramp();
         this.hasOnRamp = hasOnRamp;
         this.length = length;
@@ -51,27 +57,27 @@ public class Highway {
 
     // Method to get the remaining space available in the right lane
     public double getRightLaneRemainingSpace() {
-        return righLane.getRemainingSpace();
+        return rightLane.getRemainingSpace();
     }
 
     // Method to enqueue a vehicle into the right lane if there's enough space
     public boolean enqueueRightLane(Vehicle vehicle) {
-        return righLane.enqueue(vehicle);
+        return rightLane.enqueue(vehicle);
     }
 
     // Method to dequeue the first vehicle in the right lane
     public Vehicle dequeueRightLane() {
-        return righLane.dequeue();
+        return rightLane.dequeue();
     }
 
     // Method to get the number of vehicles currently in the right lane
     public int getRightLaneNumOfVehicles() {
-        return righLane.getNumOfVehicles();
+        return rightLane.getNumOfVehicles();
     }
 
     // Method to get the next vehicle at the head of the Right Lane queue without dequeuing it
     public Vehicle nextVehicleRightLane() {
-        return righLane.nextVehicle();
+        return rightLane.nextVehicle();
     }
 
     // Method to enqueue a vehicle into the Ramp
@@ -92,5 +98,55 @@ public class Highway {
     // Method to get the number of vehicles currently on the ramp
     public int getRampNumOfVehicles() {
         return ramp.getNumOfVehicles();
+    }
+
+    // Method to get the next arrival
+    public double getNextArrival() {
+        return nextArrival;
+    }
+
+    // Method to set the next arrival
+    public void setNextArrival(double nextArrival) {
+        this.nextArrival = nextArrival;
+    }
+
+    // Method to get the next merge
+    public double getNextMerge() {
+        return nextMerge;
+    }
+
+    // Method to set the next merge
+    public void setNextMerge(double nextMerge) {
+        this.nextMerge = nextMerge;
+    }
+
+    // Method to get the next exit to the off-ramp
+    public double getNextExitToOffRamp() {
+        return nextExitToOffRamp;
+    }
+
+    // Method to set the next exit to the off-ramp
+    public void setNextExitToOffRamp(double nextExitToOffRamp) {
+        this.nextExitToOffRamp = nextExitToOffRamp;
+    }
+
+    // Method to get the next exit from lane one
+    public double getNextExitLane1() {
+        return nextExitLane1;
+    }
+
+    // Method to set the next exit from lane one
+    public void setNextExitLane1(double nextExitLane1) {
+        this.nextExitLane1 = nextExitLane1;
+    }
+
+    // Method to get the next exit from lane two
+    public double getNextExitLane2() {
+        return nextExitLane2;
+    }
+
+    // Method to set the next exit from lane two
+    public void setNextExitLane2(double nextExitLane2) {
+        this.nextExitLane2 = nextExitLane2;
     }
 }

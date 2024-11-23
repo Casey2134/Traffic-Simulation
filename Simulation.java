@@ -1,3 +1,5 @@
+import java.util.Random;
+
 public class Simulation {
     double currentTime = 0;
     double totalTime;
@@ -104,4 +106,9 @@ public class Simulation {
         System.out.println("Total passengers travelled: " + totalPeopleTravelled);
 
     }
+    public static int getRandomInt(int max) {
+        Random random = new Random();
+        return random.nextInt(max+1);
+    }
+
 }

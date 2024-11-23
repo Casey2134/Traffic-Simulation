@@ -1,74 +1,89 @@
 public class Simulation {
     double currentTime = 0;
-    double totalTime;
-    double nextArrival;
-    double nextMerge;
-    double nextExit;
-    Highway highway = new Highway(10000);
-    OnRamp onRamp1 = new OnRamp();
-    OffRamp offRamp1 = new OffRamp();
+    double totalTime = 0;
+    int currentHighway = 0;
+    double[] pastEvents = new double[5];
+    Highway[] highways = new Highway[4];
+    double[] lengths = new double[] { 1000, 3000, 3000, 6000 };
+    boolean[] hasOnRamp = new boolean[] { true, false, true, false };
+
     Arrival arrival = new Arrival();
-    // consider making multiple exponential objects for each event type
     Exponential exponential = new Exponential(0.5);
+    Normal normal = new Normal(.5, 1);
 
     private void doLoop() {
         while (currentTime < totalTime) {
-            // merges next vehicle
-            if (currentTime == nextMerge) {
-                if (onRamp1.nextVehicle() != null) {
-                    if (onRamp1.nextVehicle().getVehicleLength() < highway.getRemainingSpace()) {
-                        highway.enqueue(onRamp1.dequeue());
-                        nextMerge = currentTime + 3;
+            for (int i = 0; i < highways.length; i++) {
+                currentHighway = i;
+                doNextEvents(getNextEvents(highways[i]), highways[i], highways);
+            }
+            currentTime++;
+
+        }
+    }
+
+    private void doNextEvents(double[] events, Highway highway, Highway[] highways){
+        for(int i = 0; i < events.length; i++){
+            if(events [i] == 0){
+                break;
+            }
+            else if(events[i] == highway.getNextArrival()){
+                Vehicle vehicle = arrival.nextVehicle(currentTime);
+                getOffRamp(vehicle);
+                highway.enqueueRamp(vehicle);
+                
+                highway.setNextArrival(currentTime + exponential.sample());
+            }
+            else if(events[i] == highway.getNextMerge()){
+                if(highway.getRightLaneRemainingSpace() > highway.nextVehicleRamp().getVehicleLength()){
+                    highway.enqueueRightLane(highway.dequeueRamp());
+                }
+                highway.setNextMerge(currentTime + exponential.sample());
+            }
+            else if(events[i] == highway.getNextExitLane2()){
+                if(highway.nextVehicleRightLane().getEndPoint() == currentHighway){
+                    highway.rampEnqueue(highway.dequeueRightLane()
+                }
+                else{
+                    if(highways[currentHighway+1].getLeftLaneRemainingSpace() > highway.nextVehicleRightLane() && highway[currentHighway + 1].getLeftLaneRemainingSpace() < highways[currentHighway + 1].getRightLaneRemainingSpace()){
+                        highways[currentHighway + 1].enqueueLeftLane(highway.dequeueRightLane())
+                    }
+                    else if(highways[currentHighway + 1].getRightLaneRemainingSpace() > highway.nextVehicleRightLane()){
+                        highways[currentHighway + 1].enqueueRightLane(highway.dequeueRightLane());
                     }
                 }
-                nextMerge = currentTime + exponential.sample();
-
-            }
-            // exits vehicle from the highway
-            if (currentTime == nextExit) {
-                if (highway.nextVehicle() != null) {
-                    highway.nextVehicle().setDistanceTraveled(highway.getLength());
-                    highway.nextVehicle().setEndTime(currentTime);
-                    offRamp1.enqueue(highway.dequeue());
-
-                }
-                if (highway.nextVehicle() == null) {
-                    nextExit = nextMerge + (highway.getLength() / 95.333);
-                } else if (highway.nextVehicle().getStartTime() + (highway.getLength() / 95.3333) < currentTime) {
-                    nextExit = highway.nextVehicle().getStartTime() + (highway.getLength() / 95.3333);
-                } else {
-                    nextExit = currentTime + 3;
-                }
-            }
-            // adds vehicle to the on ramp
-            if (currentTime == nextArrival) {
-                onRamp1.enqueue(arrival.nextVehicle(currentTime));
-                nextArrival = currentTime + exponential.sample();
             }
 
-            currentTime = getNextEvent();
+
         }
-        getData(offRamp1);
     }
 
     public void run(double input) {
+        for (int i = 0; i < highways.length; i++) {
+            Highway highway = new Highway(lengths[i], hasOnRamp[i]);
+            highways[i] = highway;
+        }
         totalTime = input;
-        nextArrival = currentTime + exponential.sample();
-        nextMerge = nextArrival + 3;
-        nextExit = nextMerge + 120;
         doLoop();
 
     }
 
-    private double getNextEvent() {
-        double[] times = new double[] { nextArrival, nextMerge, nextExit };
-        double closestTime = times[0];
+    private double[] getNextEvents(Highway highway) {
+        double[] times = new double[] { highway.getNextArrival(), highway.getNextMerge(),
+                highway.getNextExitToOfframp(), highway.getNextExitLane1(), highway.getNextExitLane2() };
+        int index = 0;
         for (int i = 0; i < times.length; i++) {
-            if (times[i] < closestTime) {
-                closestTime = times[i];
+            if (times[i] != 0 && times[i] <= currentTime) {
+                pastEvents[i] = times[i];
+            } else {
+                pastEvents[i] = 0;
             }
         }
-        return closestTime;
+        return pastEvents;
+    }
+
+    private void getOffRamp(Vehicle vehicle) {
+
     }
 
     private void getData(OffRamp offRamp) {

@@ -1,3 +1,5 @@
+import java.util.Random;
+
 public class Simulation {
     double currentTime = 0;
     double totalTime = 0;
@@ -139,8 +141,21 @@ public class Simulation {
         return pastEvents;
     }
 
-    private void getOffRamp(Vehicle vehicle) {
+    private void getOffRamp(Vehicle vehicle, Highway currentHighway) {
+        int numOfHighways = 0;
+        Highway[] remainingExits = new Highway[highwaysWithOffRamps.length];
+        for (int i = 0; i < highwaysWithOffRamps.length; i++) {
+            if (highwaysWithOffRamps[i].index > currentHighway.index) {
+                highwaysWithOffRamps[numOfHighways] = highwaysWithOffRamps[i];
+                numOfHighways++;
+            }
+        }
+        vehicle.setEndPoint(highwaysWithOffRamps[getRandomInt(numOfHighways)]);
+    }
 
+    public static int getRandomInt(int max) {
+        Random random = new Random();
+        return random.nextInt(max + 1);
     }
 
     private void getData(OffRamp offRamp) {

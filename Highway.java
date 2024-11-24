@@ -1,83 +1,152 @@
-import java.util.LinkedList;
-
 public class Highway {
-    private LinkedList<Vehicle> lane;
-    private double length; // Total length of the highway in feet
-    private double remainingSpace; // Remaining space on the highway in feet
+    private final Lane leftLane;
+    private final Lane rightLane;
+    private final Ramp ramp;
+    private final boolean hasOnRamp;
+    private final double length; // Total length of the highway in feet
+    private double nextArrival;
+    private double nextMerge;
+    private double nextExitToOffRamp;
+    private double nextExitLane1;
+    private double nextExitLane2;
+    public double index;
 
     // Constructor
-    public Highway(double length) {
+    public Highway(double length, boolean hasOnRamp) {
+        this.leftLane = new Lane(length);
+        this.rightLane = new Lane(length);
+        this.ramp = new Ramp();
+        this.hasOnRamp = hasOnRamp;
         this.length = length;
-        this.remainingSpace = length;
-        this.lane = new LinkedList<>();
     }
 
-    // Method to get the total length of the highway
+    // Method to get the total length of the highway, both right and left lanes
     public double getLength() {
-        return this.length;
+        return length;
     }
 
-    // Method to get the remaining space available on the highway
-    public double getRemainingSpace() {
-        return this.remainingSpace;
+    // Method to determine if it has an on or off ramp
+    public boolean hasOnRamp() {
+        return hasOnRamp;
     }
 
-    // Method to enqueue a vehicle onto the highway if there's enough space
-    public boolean enqueue(Vehicle vehicle) {
-        double vehicleLength = vehicle.getVehicleLength();
-        if (vehicleLength <= remainingSpace) {
-            lane.add(vehicle);
-            remainingSpace -= vehicleLength;
-            return true; // Vehicle successfully added to the highway
-        }
-        return false; // Not enough space for the vehicle
+    // Method to get the remaining space available in the left lane
+    public double getLeftLaneRemainingSpace() {
+        return leftLane.getRemainingSpace();
     }
 
-    // Method to dequeue the first vehicle on the highway
-    public Vehicle dequeue() {
-        if (lane.isEmpty()) {
-            return null;
-        }
-        Vehicle exitingVehicle = lane.removeFirst();
-        remainingSpace += exitingVehicle.getVehicleLength(); // Free up space
-        return exitingVehicle;
+    // Method to enqueue a vehicle into the left lane if there's enough space
+    public boolean enqueueLeftLane(Vehicle vehicle) {
+        return leftLane.enqueue(vehicle);
     }
 
-    // Method to get the number of vehicles currently on the highway
-    public int getNumOfVehicles() {
-        return lane.size();
+    // Method to dequeue the first vehicle in the left lane
+    public Vehicle dequeueLeftLane() {
+        return leftLane.dequeue();
     }
 
-    // Method to get the next vehicle at the head of the queue without dequeuing it
-    public Vehicle nextVehicle() {
-        if (lane.isEmpty()) {
-            return null;
-        }
-        return lane.getFirst();
+    // Method to get the number of vehicles currently in the left lane
+    public int getLeftLaneNumOfVehicles() {
+        return leftLane.getNumOfVehicles();
     }
 
-    // Unit test for the Highway class
-    public static void unitTest() {
-        Highway highway = new Highway(500); // Highway of 500 feet
-        Vehicle car1 = new Car(1, 5, 1, 1); // Car with 1 passenger
-        Vehicle car2 = new Car(2, 3, 1, 1); // Car with 2 passengers
-        Vehicle bus1 = new Bus(3, 15, 1, 1); // Bus with 15 passengers
+    // Method to get the next vehicle at the head of the Left Lane queue without dequeuing it
+    public Vehicle nextVehicleLeftLane() {
+        return leftLane.nextVehicle();
+    }
 
-        // Test: Add vehicles to the highway
-        System.out.println("Enqueue Car 1: " + highway.enqueue(car1)); // Expected: true
-        System.out.println("Enqueue Car 2: " + highway.enqueue(car2)); // Expected: true
-        System.out.println("Enqueue Bus 1: " + highway.enqueue(bus1)); // Expected: true if space, false otherwise
+    // Method to get the remaining space available in the right lane
+    public double getRightLaneRemainingSpace() {
+        return rightLane.getRemainingSpace();
+    }
 
-        // Test: Get the number of vehicles on the highway
-        System.out.println("Number of vehicles: " + highway.getNumOfVehicles()); // Expected: 2 or 3
+    // Method to enqueue a vehicle into the right lane if there's enough space
+    public boolean enqueueRightLane(Vehicle vehicle) {
+        return rightLane.enqueue(vehicle);
+    }
 
-        // Test: Check the next vehicle on the highway
-        System.out.println("Next Vehicle: " + highway.nextVehicle()); // Expected: car1
+    // Method to dequeue the first vehicle in the right lane
+    public Vehicle dequeueRightLane() {
+        return rightLane.dequeue();
+    }
 
-        // Test: Dequeue a vehicle and check remaining space
-        Vehicle exitedVehicle = highway.dequeue();
-        System.out.println("Dequeued Vehicle: " + exitedVehicle);
-        System.out.println("Remaining Space: " + highway.getRemainingSpace()); // Should reflect space after removing
-                                                                               // car1
+    // Method to get the number of vehicles currently in the right lane
+    public int getRightLaneNumOfVehicles() {
+        return rightLane.getNumOfVehicles();
+    }
+
+    // Method to get the next vehicle at the head of the Right Lane queue without dequeuing it
+    public Vehicle nextVehicleRightLane() {
+        return rightLane.nextVehicle();
+    }
+
+    // Method to enqueue a vehicle into the Ramp
+    public void enqueueRamp(Vehicle vehicle) {
+        ramp.enqueue(vehicle);
+    }
+
+    // Method to dequeue the first vehicle on the Ramp
+    public Vehicle dequeueRamp() {
+        return ramp.dequeue();
+    }
+
+    // Method to get the next vehicle at the head of the Ramp queue without dequeuing it
+    public Vehicle nextVehicleRamp() {
+        return ramp.nextVehicle();
+    }
+
+    // Method to get the number of vehicles currently on the ramp
+    public int getRampNumOfVehicles() {
+        return ramp.getNumOfVehicles();
+    }
+
+    // Method to get the next arrival
+    public double getNextArrival() {
+        return nextArrival;
+    }
+
+    // Method to set the next arrival
+    public void setNextArrival(double nextArrival) {
+        this.nextArrival = nextArrival;
+    }
+
+    // Method to get the next merge
+    public double getNextMerge() {
+        return nextMerge;
+    }
+
+    // Method to set the next merge
+    public void setNextMerge(double nextMerge) {
+        this.nextMerge = nextMerge;
+    }
+
+    // Method to get the next exit to the off-ramp
+    public double getNextExitToOffRamp() {
+        return nextExitToOffRamp;
+    }
+
+    // Method to set the next exit to the off-ramp
+    public void setNextExitToOffRamp(double nextExitToOffRamp) {
+        this.nextExitToOffRamp = nextExitToOffRamp;
+    }
+
+    // Method to get the next exit from lane one
+    public double getNextExitLane1() {
+        return nextExitLane1;
+    }
+
+    // Method to set the next exit from lane one
+    public void setNextExitLane1(double nextExitLane1) {
+        this.nextExitLane1 = nextExitLane1;
+    }
+
+    // Method to get the next exit from lane two
+    public double getNextExitLane2() {
+        return nextExitLane2;
+    }
+
+    // Method to set the next exit from lane two
+    public void setNextExitLane2(double nextExitLane2) {
+        this.nextExitLane2 = nextExitLane2;
     }
 }

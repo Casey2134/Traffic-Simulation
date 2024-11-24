@@ -191,4 +191,5 @@ public class Simulation {
         System.out.println("Total passengers travelled: " + totalPeopleTravelled);
 
     }
+
 }

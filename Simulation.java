@@ -34,76 +34,85 @@ public class Simulation {
     }
 
     // should be called every time the time advances
-    private void doNextEvents(double[] events, Highway highway, Highway[] highways){
-        for(int i = 0; i < events.length; i++){
-            //checks if the event time exists
-            if(events [i] == 0){
+    private void doNextEvents(double[] events, Highway highway, Highway[] highways) {
+        for (int i = 0; i < events.length; i++) {
+            // checks if the event time exists
+            if (events[i] == 0) {
                 break;
             }
-            //if the time is the next arrival time
-            else if(events[i] == highway.getNextArrival()){
-                Vehicle vehicle = arrival.nextVehicle(currentTime);
-                getOffRamp(vehicle);
+            // if the time is the next arrival time
+            else if (events[i] == highway.getNextArrival()) {
+                Vehicle vehicle = arrival.nextVehicle(currentTime, highway, getOffRamp(highway));
+                ;
                 highway.enqueueRamp(vehicle);
-                
+
                 highway.setNextArrival(currentTime + exponential.sample());
             }
-            //if the time is the next merge time
-            else if(events[i] == highway.getNextMerge()){
-                //checks if the right lane has enough space for the next car on the ramp
-                if(highway.getRightLaneRemainingSpace() >= highway.nextVehicleRamp().getVehicleLength()){
+            // if the time is the next merge time
+            else if (events[i] == highway.getNextMerge()) {
+                // checks if the right lane has enough space for the next car on the ramp
+                if (highway.getRightLaneRemainingSpace() >= highway.nextVehicleRamp().getVehicleLength()) {
                     highway.enqueueRightLane(highway.dequeueRamp());
                 }
                 highway.setNextMerge(currentTime + exponential.sample());
             }
-            //if the time is the next vehicle in the right lane (lane 2)
-            else if(events[i] == highway.getNextExitLane2()){
-                //checks if the car is exiting on this highway
-                if(highway.nextVehicleRightLane().getEndPoint() == highway.index){
-                    highway.rampEnqueue(highway.dequeueRightLane()
-                }
-                else{
-                    //checks if the car is exiting on the next highway
-                    if(highway[highway.index+1] == highway.nextVehicleRightLane().getEndPoint()){
-                        //if correct the car must join the right lane or not move forward
-                        //checks if the right lane has space for the car
-                        if (highways[highway. + 1].getRightLaneRemainingSpace() >= highway.nextVehicleRightLane().getVehicleLength()) {
+            // if the time is the next vehicle in the right lane (lane 2)
+            else if (events[i] == highway.getNextExitLane2()) {
+                // checks if the car is exiting on this highway
+                if (highway.nextVehicleRightLane().getEndPoint() == highway) {
+                    highway.enqueueRamp(highway.dequeueRightLane());
+                } else {
+                    // checks if the car is exiting on the next highway
+                    if (highways[highway.index + 1] == highway.nextVehicleRightLane().getEndPoint()) {
+                        // if correct the car must join the right lane or not move forward
+                        // checks if the right lane has space for the car
+                        if (highways[highway.index + 1].getRightLaneRemainingSpace() >= highway.nextVehicleRightLane()
+                                .getVehicleLength()) {
                             highways[highway.index + 1].enqueueRightLane(highway.dequeueRightLane());
                         }
                     }
-                    //checks if the left lane has space for the next car and if the left lane is shorter than the right lane
-                    if(highways[highway.index+1].getLeftLaneRemainingSpace() >= highway.nextVehicleRightLane().getVehicleLength() && highway[highway.index + 1].getLeftLaneRemainingSpace() < highways[highway.index + 1].getRightLaneRemainingSpace()){
+                    // checks if the left lane has space for the next car and if the left lane is
+                    // shorter than the right lane
+                    if (highways[highway.index + 1].getLeftLaneRemainingSpace() >= highway.nextVehicleRightLane()
+                            .getVehicleLength()
+                            && highways[highway.index + 1].getLeftLaneRemainingSpace() < highways[highway.index + 1]
+                                    .getRightLaneRemainingSpace()) {
                         highways[highway.index + 1].enqueueLeftLane(highway.dequeueRightLane());
                     }
-                    //checks if the right lane has space for the car
-                    else if(highways[highway.index + 1].getRightLaneRemainingSpace() >= highway.nextVehicleRightLane().getVehicleLength()){
+                    // checks if the right lane has space for the car
+                    else if (highways[highway.index + 1].getRightLaneRemainingSpace() >= highway.nextVehicleRightLane()
+                            .getVehicleLength()) {
                         highways[highway.index + 1].enqueueRightLane(highway.dequeueRightLane());
                     }
                 }
                 highway.setNextExitLane2(currentTime + exponential.sample());
             }
-            //if the next time is the left lane (lane 1)
+            // if the next time is the left lane (lane 1)
             else if (events[i] == highway.getNextExitLane1()) {
-                //checks if the next highway is the next car's exit
-                //if it is the car must join the right lane or not move forward
-                if(highway[highway.index+1] == highway.nextVehicleLeftLane().getEndPoint()){
-                    //checks if the right lane has enough space for the next car
-                    if (highways[highway.index + 1].getRightLaneRemainingSpace() >= highway.nextVehicleLeftLane().getVehicleLength()) {
+                // checks if the next highway is the next car's exit
+                // if it is the car must join the right lane or not move forward
+                if (highways[highway.index + 1] == highway.nextVehicleLeftLane().getEndPoint()) {
+                    // checks if the right lane has enough space for the next car
+                    if (highways[highway.index + 1].getRightLaneRemainingSpace() >= highway.nextVehicleLeftLane()
+                            .getVehicleLength()) {
                         highways[highway.index + 1].enqueueRightLane(highway.dequeueRightLane());
                     }
                 }
-                //checks if the left lane is shorter than the right and if it has enough space for the next car in the left lane
-                else if(highways[highway.index+1].getLeftLaneRemainingSpace() >= highway.nextVehicleLeftLane().getVehicleLength() && highway[highway.index + 1].getLeftLaneRemainingSpace() < highways[highway.index + 1].getRightLaneRemainingSpace()){
-                    highways[highway.index + 1].enqueueLeftLane(highway.dequeueLeftLane())
+                // checks if the left lane is shorter than the right and if it has enough space
+                // for the next car in the left lane
+                else if (highways[highway.index + 1].getLeftLaneRemainingSpace() >= highway.nextVehicleLeftLane()
+                        .getVehicleLength()
+                        && highways[highway.index + 1].getLeftLaneRemainingSpace() < highways[highway.index + 1]
+                                .getRightLaneRemainingSpace()) {
+                    highways[highway.index + 1].enqueueLeftLane(highway.dequeueLeftLane());
                 }
-                //checks if the right lane has enough space for the next car in the left lane
-                else if(highways[highway.index + 1].getRightLaneRemainingSpace() >= highway.nextVehicleLeftLane().getVehicleLength()){
+                // checks if the right lane has enough space for the next car in the left lane
+                else if (highways[highway.index + 1].getRightLaneRemainingSpace() >= highway.nextVehicleLeftLane()
+                        .getVehicleLength()) {
                     highways[highway.index + 1].enqueueRightLane(highway.dequeueLeftLane());
                 }
                 highway.setNextExitLane1(currentTime + exponential.sample());
             }
-
-
         }
     }
 
@@ -122,6 +131,14 @@ public class Simulation {
         }
         totalTime = input;
         // need to set all initial times for all events in the array
+        for (int i = 0; i < highways.length; i++) {
+            highways[i].setNextArrival(exponential.sample());
+            highways[i].setNextExitLane1(exponential.sample());
+            highways[i].setNextExitLane2(exponential.sample());
+            if (highways[i].hasOnRamp()) {
+                highways[i].setNextMerge(exponential.sample());
+            }
+        }
         doLoop();
 
     }
@@ -141,7 +158,7 @@ public class Simulation {
         return pastEvents;
     }
 
-    private void getOffRamp(Vehicle vehicle, Highway currentHighway) {
+    private Highway getOffRamp(Highway currentHighway) {
         int numOfHighways = 0;
         Highway[] remainingExits = new Highway[highwaysWithOffRamps.length];
         for (int i = 0; i < highwaysWithOffRamps.length; i++) {
@@ -150,7 +167,7 @@ public class Simulation {
                 numOfHighways++;
             }
         }
-        vehicle.setEndPoint(highwaysWithOffRamps[getRandomInt(numOfHighways)]);
+        return (remainingExits[getRandomInt(numOfHighways)]);
     }
 
     public static int getRandomInt(int max) {

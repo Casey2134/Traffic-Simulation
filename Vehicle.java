@@ -2,25 +2,29 @@ public class Vehicle {
     int vehicleLength;
     int passengerCount;
     static int maxPassengerCount;
-    int startPoint;
-    int endPoint;
+    Highway startPoint;
+    Highway endPoint;
     double startTime;
     double endTime;
     double distanceTraveled;
 
-    public Vehicle(int passengerCount, int startPoint, int endPoint, double startTime) {
+    public Vehicle(int passengerCount, Highway startPoint, Highway endPoint, double startTime) {
         this.passengerCount = passengerCount;
         this.startPoint = startPoint;
         this.endPoint = endPoint;
         this.startTime = startTime;
     };
 
-    public int getStartPoint() {
+    public Highway getStartPoint() {
         return startPoint;
     }
 
-    public int getEndPoint() {
+    public Highway getEndPoint() {
         return endPoint;
+    }
+
+    public void setEndPoint(Highway highway) {
+        endPoint = highway;
     }
 
     public void setDistanceTraveled(double input) {

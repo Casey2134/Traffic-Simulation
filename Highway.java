@@ -4,20 +4,22 @@ public class Highway {
     private final Ramp ramp;
     private final boolean hasOnRamp;
     private final double length; // Total length of the highway in feet
-    private double nextArrival;
+    double[] times;
     private double nextMerge;
     private double nextExitToOffRamp;
     private double nextExitLane1;
     private double nextExitLane2;
-    public double index;
+    public int index;
 
     // Constructor
-    public Highway(double length, boolean hasOnRamp) {
+    public Highway(double length, boolean hasOnRamp, int index) {
         this.leftLane = new Lane(length);
         this.rightLane = new Lane(length);
         this.ramp = new Ramp();
         this.hasOnRamp = hasOnRamp;
         this.length = length;
+        this.index = index;
+        times = new double[hasOnRamp ? 4 : 2];
     }
 
     // Method to get the total length of the highway, both right and left lanes
@@ -50,7 +52,8 @@ public class Highway {
         return leftLane.getNumOfVehicles();
     }
 
-    // Method to get the next vehicle at the head of the Left Lane queue without dequeuing it
+    // Method to get the next vehicle at the head of the Left Lane queue without
+    // dequeuing it
     public Vehicle nextVehicleLeftLane() {
         return leftLane.nextVehicle();
     }
@@ -75,7 +78,8 @@ public class Highway {
         return rightLane.getNumOfVehicles();
     }
 
-    // Method to get the next vehicle at the head of the Right Lane queue without dequeuing it
+    // Method to get the next vehicle at the head of the Right Lane queue without
+    // dequeuing it
     public Vehicle nextVehicleRightLane() {
         return rightLane.nextVehicle();
     }
@@ -90,7 +94,8 @@ public class Highway {
         return ramp.dequeue();
     }
 
-    // Method to get the next vehicle at the head of the Ramp queue without dequeuing it
+    // Method to get the next vehicle at the head of the Ramp queue without
+    // dequeuing it
     public Vehicle nextVehicleRamp() {
         return ramp.nextVehicle();
     }
@@ -99,15 +104,11 @@ public class Highway {
     public int getRampNumOfVehicles() {
         return ramp.getNumOfVehicles();
     }
-
-    // Method to get the next arrival
-    public double getNextArrival() {
-        return nextArrival;
-    }
-
     // Method to set the next arrival
-    public void setNextArrival(double nextArrival) {
-        this.nextArrival = nextArrival;
+    public void setNextTimes(double[] nextTimes) {
+        for(int i = 0; i < this.times.length ; i++){
+            this.times[i] = nextTimes[i];
+        }
     }
 
     // Method to get the next merge

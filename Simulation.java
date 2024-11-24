@@ -43,7 +43,6 @@ public class Simulation {
             // if the time is the next arrival time
             else if (events[i] == highway.getNextArrival()) {
                 Vehicle vehicle = arrival.nextVehicle(currentTime, highway, getOffRamp(highway));
-                ;
                 highway.enqueueRamp(vehicle);
 
                 highway.setNextArrival(currentTime + exponential.sample());
@@ -60,6 +59,8 @@ public class Simulation {
             else if (events[i] == highway.getNextExitLane2()) {
                 // checks if the car is exiting on this highway
                 if (highway.nextVehicleRightLane().getEndPoint() == highway) {
+                    highway.nextVehicleRightLane().setEndTime(highway.getNextExitLane2());
+                    highway.nextVehicleRightLane().updateDistanceTraveled(highway.getLength());
                     highway.enqueueRamp(highway.dequeueRightLane());
                 } else {
                     // checks if the car is exiting on the next highway
@@ -68,6 +69,7 @@ public class Simulation {
                         // checks if the right lane has space for the car
                         if (highways[highway.index + 1].getRightLaneRemainingSpace() >= highway.nextVehicleRightLane()
                                 .getVehicleLength()) {
+                            highway.nextVehicleRightLane().updateDistanceTraveled(highway.getLength());
                             highways[highway.index + 1].enqueueRightLane(highway.dequeueRightLane());
                         }
                     }
@@ -77,24 +79,27 @@ public class Simulation {
                             .getVehicleLength()
                             && highways[highway.index + 1].getLeftLaneRemainingSpace() < highways[highway.index + 1]
                                     .getRightLaneRemainingSpace()) {
+                        highway.nextVehicleRightLane().updateDistanceTraveled(highway.getLength());
                         highways[highway.index + 1].enqueueLeftLane(highway.dequeueRightLane());
                     }
                     // checks if the right lane has space for the car
                     else if (highways[highway.index + 1].getRightLaneRemainingSpace() >= highway.nextVehicleRightLane()
                             .getVehicleLength()) {
+                        highway.nextVehicleRightLane().updateDistanceTraveled(highway.getLength());
                         highways[highway.index + 1].enqueueRightLane(highway.dequeueRightLane());
                     }
                 }
                 highway.setNextExitLane2(currentTime + exponential.sample());
             }
             // if the next time is the left lane (lane 1)
-            else if (events[i] == highway.getNextExitLane1()) {
+            else if (events[i] == highway.getNextExitLane1() && highway.nextVehicleLeftLane() != null) {
                 // checks if the next highway is the next car's exit
                 // if it is the car must join the right lane or not move forward
                 if (highways[highway.index + 1] == highway.nextVehicleLeftLane().getEndPoint()) {
                     // checks if the right lane has enough space for the next car
                     if (highways[highway.index + 1].getRightLaneRemainingSpace() >= highway.nextVehicleLeftLane()
                             .getVehicleLength()) {
+                        highway.nextVehicleRightLane().updateDistanceTraveled(highway.getLength());
                         highways[highway.index + 1].enqueueRightLane(highway.dequeueRightLane());
                     }
                 }
@@ -104,11 +109,13 @@ public class Simulation {
                         .getVehicleLength()
                         && highways[highway.index + 1].getLeftLaneRemainingSpace() < highways[highway.index + 1]
                                 .getRightLaneRemainingSpace()) {
+                    highway.nextVehicleRightLane().updateDistanceTraveled(highway.getLength());
                     highways[highway.index + 1].enqueueLeftLane(highway.dequeueLeftLane());
                 }
                 // checks if the right lane has enough space for the next car in the left lane
                 else if (highways[highway.index + 1].getRightLaneRemainingSpace() >= highway.nextVehicleLeftLane()
                         .getVehicleLength()) {
+                    highway.nextVehicleRightLane().updateDistanceTraveled(highway.getLength());
                     highways[highway.index + 1].enqueueRightLane(highway.dequeueLeftLane());
                 }
                 highway.setNextExitLane1(currentTime + exponential.sample());
@@ -140,6 +147,7 @@ public class Simulation {
             }
         }
         doLoop();
+        getData();
 
     }
 
@@ -167,7 +175,12 @@ public class Simulation {
                 numOfHighways++;
             }
         }
-        return (remainingExits[getRandomInt(numOfHighways)]);
+        if (numOfHighways > 1) {
+            return (remainingExits[getRandomInt(numOfHighways - 1)]);
+        } else {
+            return remainingExits[0];
+        }
+
     }
 
     public static int getRandomInt(int max) {
@@ -175,7 +188,7 @@ public class Simulation {
         return random.nextInt(max + 1);
     }
 
-    private void getData(OffRamp offRamp) {
+    private void getData() {
         double averageSpeedTotal = 0;
         double averageSpeedValues = 0;
         double numOfBusses = 0;
@@ -185,20 +198,23 @@ public class Simulation {
         double averageDistanceValues = 0;
         double totalPeopleTravelled = 0;
         Vehicle currentVehicle;
-        while ((currentVehicle = offRamp.dequeue()) != null) {
-            averageSpeedTotal += currentVehicle.getAverageSpeed();
-            averageSpeedValues++;
-            averageDistanceTotal += currentVehicle.getDistanceTraveled();
-            averageDistanceValues++;
-            totalPeopleTravelled += currentVehicle.getPassengers();
-            if (currentVehicle.getVehicleLength() == 30) {
-                numOfBusses++;
-            } else {
-                numOfCars++;
-            }
-            numOfVehicles++;
+        for (int i = 0; i < highwaysWithOffRamps.length; i++) {
+            while ((currentVehicle = highwaysWithOffRamps[i].dequeueRamp()) != null) {
+                averageSpeedTotal += currentVehicle.getAverageSpeed();
+                averageSpeedValues++;
+                averageDistanceTotal += currentVehicle.getDistanceTraveled();
+                averageDistanceValues++;
+                totalPeopleTravelled += currentVehicle.getPassengers();
+                if (currentVehicle.getVehicleLength() == 30) {
+                    numOfBusses++;
+                } else {
+                    numOfCars++;
+                }
+                numOfVehicles++;
 
+            }
         }
+
         System.out.println(
                 "Average distance travelled: " + (averageDistanceTotal / averageDistanceValues) / 5280 + " miles");
         System.out.println("Average speed: " + (averageSpeedTotal / averageSpeedValues) * 0.68 + " mph");

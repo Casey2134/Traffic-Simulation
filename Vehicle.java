@@ -27,8 +27,8 @@ public class Vehicle {
         endPoint = highway;
     }
 
-    public void setDistanceTraveled(double input) {
-        distanceTraveled = input;
+    public void updateDistanceTraveled(double input) {
+        distanceTraveled += input;
     }
 
     public static int getMaxPassengers() {

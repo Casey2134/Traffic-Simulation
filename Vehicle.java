@@ -15,16 +15,16 @@ public class Vehicle {
         this.startTime = startTime;
     };
 
+    public String toString() {
+        return (startTime + ", " + endTime + ", " + distanceTraveled);
+    }
+
     public Highway getStartPoint() {
         return startPoint;
     }
 
     public Highway getEndPoint() {
         return endPoint;
-    }
-
-    public void setEndPoint(Highway highway) {
-        endPoint = highway;
     }
 
     public void updateDistanceTraveled(double input) {

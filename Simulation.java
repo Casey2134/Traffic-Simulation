@@ -7,7 +7,7 @@ public class Simulation {
 
     double currentTime = 0;
     double totalTime = 0;
-    double[] highwayLengths = new double[] { 1000, 2000, 3000, 4000, 5000, 7000, 10000, 8000, 20000, 7000 };
+    double[] highwayLengths = new double[] { 600000, 26000, 2500, 5000, 10000, 30000, 1000, 6000, 20000, 1000 };
     boolean[] hasOnRamp = new boolean[] { true, false, true, false, false, true, true, false, true, false };
     Highway[] highways = new Highway[highwayLengths.length];
     Highway currentHighway;
@@ -15,8 +15,7 @@ public class Simulation {
 
     Arrival arrival = new Arrival();
     Exponential arrivalRate = new Exponential(1);
-    Normal mergeRate = new Normal(5, 2);
-    double travelRate = 286.0 / 3.0;
+    Normal mergeRate = new Normal(4, 1);
 
     // iterates through the highways in the array until the time is up
     public void run(double time) {
@@ -70,21 +69,9 @@ public class Simulation {
         }
         if (nextEvent == Event.ARRIVAL) {
             timeHighway.times[position] = currentTime + arrivalRate.sample();
-        } else if (nextEvent == Event.MERGE && timeHighway.nextVehicleRamp() != null) {
-            timeHighway.times[position] = currentTime + mergeRate.sample();
-        } else if (nextEvent == Event.LANE1 && timeHighway.nextVehicleLeftLane() != null) {
-            if (currentTime - timeHighway.nextVehicleLeftLane().startTime > currentHighway.getLength() / travelRate) {
-                timeHighway.times[position] = currentTime + mergeRate.sample();
-            } else {
-                timeHighway.times[position] = currentTime + mergeRate.sample();
-            }
-        } else if (timeHighway.nextVehicleRightLane() != null) {
-            if (currentTime - timeHighway.nextVehicleRightLane().startTime > currentHighway.getLength() / travelRate) {
-                timeHighway.times[position] = currentTime + mergeRate.sample();
-            } else {
-                timeHighway.times[position] = currentTime + currentHighway.getLength() / travelRate
-                        - timeHighway.nextVehicleRightLane().startTime;
-            }
+        } else {
+            timeHighway.times[position] = currentTime + arrivalRate.sample();
+            System.out.println(arrivalRate.sample());
         }
         return nextEvent;
     }
@@ -107,19 +94,16 @@ public class Simulation {
                 if (nextHighway.getRightLaneRemainingSpace() >= currentHighway.nextVehicleLeftLane()
                         .getVehicleLength()) {
                     currentHighway.nextVehicleLeftLane().updateDistanceTraveled(currentHighway.getLength());
-                    currentHighway.nextVehicleLeftLane().setSegmentTime(currentTime);
                     nextHighway.enqueueRightLane(currentHighway.dequeueLeftLane());
                 }
             } else {
                 if (nextHighway.getLeftLaneRemainingSpace() < nextHighway.getRightLaneRemainingSpace() && nextHighway
                         .getLeftLaneRemainingSpace() >= currentHighway.nextVehicleLeftLane().getVehicleLength()) {
                     currentHighway.nextVehicleLeftLane().updateDistanceTraveled(currentHighway.getLength());
-                    currentHighway.nextVehicleLeftLane().setSegmentTime(currentTime);
                     nextHighway.enqueueLeftLane(currentHighway.dequeueLeftLane());
                 } else if (nextHighway.getRightLaneRemainingSpace() >= currentHighway.nextVehicleLeftLane()
                         .getVehicleLength()) {
                     currentHighway.nextVehicleLeftLane().updateDistanceTraveled(currentHighway.getLength());
-                    currentHighway.nextVehicleLeftLane().setSegmentTime(currentTime);
                     nextHighway.enqueueRightLane(currentHighway.dequeueLeftLane());
                 }
             }
@@ -134,19 +118,16 @@ public class Simulation {
                 if (nextHighway.getRightLaneRemainingSpace() >= currentHighway.nextVehicleRightLane()
                         .getVehicleLength()) {
                     currentHighway.nextVehicleRightLane().updateDistanceTraveled(currentHighway.getLength());
-                    currentHighway.nextVehicleRightLane().setSegmentTime(currentTime);
                     nextHighway.enqueueRightLane(currentHighway.dequeueRightLane());
                 }
             } else {
                 if (nextHighway.getLeftLaneRemainingSpace() < nextHighway.getRightLaneRemainingSpace() && nextHighway
                         .getLeftLaneRemainingSpace() >= currentHighway.nextVehicleRightLane().getVehicleLength()) {
                     currentHighway.nextVehicleRightLane().updateDistanceTraveled(currentHighway.getLength());
-                    currentHighway.nextVehicleRightLane().setSegmentTime(currentTime);
                     nextHighway.enqueueLeftLane(currentHighway.dequeueRightLane());
                 } else if (nextHighway.getRightLaneRemainingSpace() >= currentHighway.nextVehicleRightLane()
                         .getVehicleLength()) {
                     currentHighway.nextVehicleRightLane().updateDistanceTraveled(currentHighway.getLength());
-                    currentHighway.nextVehicleRightLane().setSegmentTime(currentTime);
                     nextHighway.enqueueRightLane(currentHighway.dequeueRightLane());
                 }
             }
@@ -156,7 +137,6 @@ public class Simulation {
 
     private void merge() {
         if (currentHighway.getRightLaneRemainingSpace() >= currentHighway.nextVehicleRamp().getVehicleLength()) {
-            currentHighway.nextVehicleRamp().setSegmentTime(currentTime);
             currentHighway.enqueueRightLane(currentHighway.dequeueRamp());
         }
     }

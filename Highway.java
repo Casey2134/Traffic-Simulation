@@ -4,8 +4,9 @@ public class Highway {
     private final Ramp ramp;
     private final boolean hasOnRamp;
     private final double length; // Total length of the highway in feet
-    private double nextArrival;
+    double[] times;
     private double nextMerge;
+    private double nextExitToOffRamp;
     private double nextExitLane1;
     private double nextExitLane2;
     public int index;
@@ -18,6 +19,7 @@ public class Highway {
         this.hasOnRamp = hasOnRamp;
         this.length = length;
         this.index = index;
+        times = new double[hasOnRamp ? 4 : 2];
     }
 
     // Method to get the total length of the highway, both right and left lanes
@@ -103,14 +105,11 @@ public class Highway {
         return ramp.getNumOfVehicles();
     }
 
-    // Method to get the next arrival
-    public double getNextArrival() {
-        return nextArrival;
-    }
-
     // Method to set the next arrival
-    public void setNextArrival(double nextArrival) {
-        this.nextArrival = nextArrival;
+    public void setNextTimes(double[] nextTimes) {
+        for (int i = 0; i < this.times.length; i++) {
+            this.times[i] = nextTimes[i];
+        }
     }
 
     // Method to get the next merge
@@ -121,6 +120,16 @@ public class Highway {
     // Method to set the next merge
     public void setNextMerge(double nextMerge) {
         this.nextMerge = nextMerge;
+    }
+
+    // Method to get the next exit to the off-ramp
+    public double getNextExitToOffRamp() {
+        return nextExitToOffRamp;
+    }
+
+    // Method to set the next exit to the off-ramp
+    public void setNextExitToOffRamp(double nextExitToOffRamp) {
+        this.nextExitToOffRamp = nextExitToOffRamp;
     }
 
     // Method to get the next exit from lane one

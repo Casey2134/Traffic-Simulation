@@ -1,208 +1,198 @@
 import java.util.Random;
 
 public class Simulation {
+    enum Event {
+        ARRIVAL, MERGE, LANE1, LANE2
+    };
+
     double currentTime = 0;
     double totalTime = 0;
-    // stores the times for the events to be executed
-    // might change data structure to queue
-    double[] pastEvents = new double[5];
-    // stores the lengths of highway sections in order
-    // might import from csv in the future
-    double[] lengths = new double[] { 1000, 3000, 2000, 6000, 5000, 7000 };
-    // array of the highway sections in order based on the number of lengths
-    Highway[] highways = new Highway[lengths.length];
-    // for every highway this array stores if there is an on ramp(true) or an off
-    // ramp(false) in order
-    boolean[] hasOnRamp = new boolean[] { true, false, true, false, true, false };
-    // will store all the highways with off ramps
-    // might need a different data structure or a different way to init length
-    Highway[] highwaysWithOffRamps = new Highway[3];
+    double[] highwayLengths = new double[] { 1000, 2000, 3000, 4000, 5000, 7000, 10000, 8000, 20000, 7000 };
+    boolean[] hasOnRamp = new boolean[] { true, false, true, false, false, true, true, false, true, false };
+    Highway[] highways = new Highway[highwayLengths.length];
+    Highway currentHighway;
+    Highway nextHighway;
 
     Arrival arrival = new Arrival();
-    Exponential exponential = new Exponential(0.5);
-    Normal normal = new Normal(.5, 1);
+    Exponential arrivalRate = new Exponential(1);
+    Normal mergeRate = new Normal(5, 2);
+    double travelRate = 286.0 / 3.0;
 
     // iterates through the highways in the array until the time is up
-    private void doLoop() {
-        while (currentTime < totalTime) {
-            for (int i = 0; i < highways.length; i++) {
-                doNextEvents(getNextEvents(highways[i]), highways[i], highways);
-            }
-            currentTime++;
-
-        }
-    }
-
-    // should be called every time the time advances
-    private void doNextEvents(double[] events, Highway highway, Highway[] highways) {
-        for (int i = 0; i < events.length; i++) {
-            // checks if the event time exists
-            if (events[i] == 0) {
-                break;
-            }
-            // if the time is the next arrival time
-            else if (events[i] == highway.getNextArrival() && highway.hasOnRamp()) {
-                Vehicle vehicle = arrival.nextVehicle(currentTime, highway, getOffRamp(highway));
-                highway.enqueueRamp(vehicle);
-
-                highway.setNextArrival(currentTime + exponential.sample());
-            }
-            // if the time is the next merge time
-            else if (events[i] == highway.getNextMerge()) {
-                // checks if the right lane has enough space for the next car on the ramp
-                if (highway.getRightLaneRemainingSpace() >= highway.nextVehicleRamp().getVehicleLength()) {
-                    highway.enqueueRightLane(highway.dequeueRamp());
-                }
-                highway.setNextMerge(currentTime + exponential.sample());
-            }
-            // if the time is the next vehicle in the right lane (lane 2)
-            else if (events[i] == highway.getNextExitLane2() && highway.nextVehicleRightLane() != null) {
-                // checks if the car is exiting on this highway
-                if (highway.nextVehicleRightLane().getEndPoint().index == highway.index) {
-                    highway.nextVehicleRightLane().setEndTime(highway.getNextExitLane2());
-                    highway.nextVehicleRightLane().updateDistanceTraveled(highway.getLength());
-                    highway.enqueueRamp(highway.dequeueRightLane());
-                } else {
-                    // checks if the car is exiting on the next highway
-                    if (highways[highway.index + 1].index == highway.nextVehicleRightLane().getEndPoint().index) {
-                        // if correct the car must join the right lane or not move forward
-                        // checks if the right lane has space for the car
-                        if (highways[highway.index + 1].getRightLaneRemainingSpace() >= highway.nextVehicleRightLane()
-                                .getVehicleLength()) {
-                            highway.nextVehicleRightLane().updateDistanceTraveled(highway.getLength());
-                            highways[highway.index + 1].enqueueRightLane(highway.dequeueRightLane());
-                        }
-                    }
-                    // checks if the left lane has space for the next car and if the left lane is
-                    // shorter than the right lane
-                    else if (highway.nextVehicleRightLane() != null
-                            && highways[highway.index + 1].getLeftLaneRemainingSpace() >= highway.nextVehicleRightLane()
-                                    .getVehicleLength()
-                            && highways[highway.index + 1].getLeftLaneRemainingSpace() < highways[highway.index + 1]
-                                    .getRightLaneRemainingSpace()) {
-                        highway.nextVehicleRightLane().updateDistanceTraveled(highway.getLength());
-                        highways[highway.index + 1].enqueueLeftLane(highway.dequeueRightLane());
-                    }
-                    // checks if the right lane has space for the car
-                    else if (highway.nextVehicleRightLane() != null
-                            && highways[highway.index + 1].getRightLaneRemainingSpace() >= highway
-                                    .nextVehicleRightLane()
-                                    .getVehicleLength()) {
-                        highway.nextVehicleRightLane().updateDistanceTraveled(highway.getLength());
-                        highways[highway.index + 1].enqueueRightLane(highway.dequeueRightLane());
-                    } else {
-
-                        // System.out.println(highways[highway.index + 1].getRightLaneRemainingSpace());
-                        System.out.println(highway.nextVehicleRightLane().getEndPoint().index);
-                        // System.out.println(highways[highway.index + 1].getRightLaneNumOfVehicles());
-                    }
-                }
-                highway.setNextExitLane2(currentTime + exponential.sample());
-            }
-            // if the next time is the left lane (lane 1)
-            else if (events[i] == highway.getNextExitLane1() && highway.nextVehicleLeftLane() != null) {
-                // checks if the next highway is the next car's exit
-                // if it is the car must join the right lane or not move forward
-                if (highways[highway.index + 1] == highway.nextVehicleLeftLane().getEndPoint()) {
-                    // checks if the right lane has enough space for the next car
-                    if (highways[highway.index + 1].getRightLaneRemainingSpace() >= highway.nextVehicleLeftLane()
-                            .getVehicleLength()) {
-                        highway.nextVehicleRightLane().updateDistanceTraveled(highway.getLength());
-                        highways[highway.index + 1].enqueueRightLane(highway.dequeueRightLane());
-                    }
-                }
-                // checks if the left lane is shorter than the right and if it has enough space
-                // for the next car in the left lane
-                else if (highways[highway.index + 1].getLeftLaneRemainingSpace() >= highway.nextVehicleLeftLane()
-                        .getVehicleLength()
-                        && highways[highway.index + 1].getLeftLaneRemainingSpace() < highways[highway.index + 1]
-                                .getRightLaneRemainingSpace()) {
-                    highway.nextVehicleRightLane().updateDistanceTraveled(highway.getLength());
-                    highways[highway.index + 1].enqueueLeftLane(highway.dequeueLeftLane());
-                }
-                // checks if the right lane has enough space for the next car in the left lane
-                else if (highways[highway.index + 1].getRightLaneRemainingSpace() >= highway.nextVehicleLeftLane()
-                        .getVehicleLength()) {
-                    highway.nextVehicleRightLane().updateDistanceTraveled(highway.getLength());
-                    highways[highway.index + 1].enqueueRightLane(highway.dequeueLeftLane());
-                }
-                highway.setNextExitLane1(currentTime + exponential.sample());
-            }
-        }
-    }
-
-    public void run(double input) {
-        // variable that stores the index of highways with off ramps
-        int a = 0;
-        // uses a loop to create the array of highways from the length and onramp arrays
+    public void run(double time) {
+        totalTime = time;
         for (int i = 0; i < highways.length; i++) {
-            Highway highway = new Highway(lengths[i], hasOnRamp[i], i);
+            Highway highway = new Highway(highwayLengths[i], hasOnRamp[i], i);
             highways[i] = highway;
-            // adds the highway to a second array if it has an off ramp
-            if (!hasOnRamp[i]) {
-                highwaysWithOffRamps[a] = highway;
-                a++;
-            }
-        }
-        totalTime = input;
-        // need to set all initial times for all events in the array
-        for (int i = 0; i < highways.length; i++) {
-            highways[i].setNextArrival(exponential.sample());
-            highways[i].setNextExitLane1(exponential.sample());
-            highways[i].setNextExitLane2(exponential.sample());
-            if (highways[i].hasOnRamp()) {
-                highways[i].setNextMerge(exponential.sample());
-            }
         }
         doLoop();
         getData();
-
     }
 
-    private double[] getNextEvents(Highway highway) {
-        if (highway.hasOnRamp()) {
-            // stores all the next event times
-            double[] times = new double[] { highway.getNextArrival(), highway.getNextMerge(),
-                    highway.getNextExitLane1(), highway.getNextExitLane2() };
-            // checks if the event has happened since the last time update
-            for (int i = 0; i < times.length; i++) {
-                if (times[i] != 0 && times[i] <= currentTime) {
-                    pastEvents[i] = times[i];
-                } else {
-                    pastEvents[i] = 0;
-                }
-            }
-            return pastEvents;
-        } else {
-            double[] times = new double[] { highway.getNextMerge(),
-                    highway.getNextExitLane1(), highway.getNextExitLane2() };
-            for (int i = 0; i < times.length; i++) {
-                if (times[i] != 0 && times[i] <= currentTime) {
-                    pastEvents[i] = times[i];
-                } else {
-                    pastEvents[i] = 0;
-                }
-            }
-            return pastEvents;
+    private void doLoop() {
+        while (currentTime < totalTime) {
+            doNextEvent(getNextEvent());
         }
 
     }
 
-    private Highway getOffRamp(Highway currentHighway) {
-        int numOfHighways = 0;
-        Highway[] remainingExits = new Highway[highwaysWithOffRamps.length];
-        for (int i = 0; i < highwaysWithOffRamps.length; i++) {
-            if (highwaysWithOffRamps[i].index > currentHighway.index) {
-                remainingExits[numOfHighways] = highwaysWithOffRamps[i];
-                numOfHighways++;
+    private Event getNextEvent() {
+        Event nextEvent = Event.LANE1;
+        Highway timeHighway = highways[0];
+        int position = 0;
+
+        double closestTime = highways[0].times[0];
+        for (int i = 0; i < highways.length; i++) {
+            for (int x = 0; x < highways[i].times.length; x++) {
+                if (highways[i].times[x] < closestTime) {
+                    if (x == 0) {
+                        nextEvent = Event.LANE1;
+                    } else if (x == 1) {
+                        nextEvent = Event.LANE2;
+                    } else if (x == 2) {
+                        nextEvent = Event.MERGE;
+                    } else {
+                        nextEvent = Event.ARRIVAL;
+                    }
+                    closestTime = highways[i].times[x];
+                    timeHighway = highways[i];
+
+                    position = x;
+                }
             }
         }
-        if (numOfHighways > 1) {
-            return (remainingExits[getRandomInt(numOfHighways - 1)]);
+        currentTime = closestTime;
+        currentHighway = timeHighway;
+        if (currentHighway.index != highways.length - 1) {
+            nextHighway = highways[currentHighway.index + 1];
         } else {
-            return remainingExits[0];
+            nextHighway = null;
+        }
+        if (nextEvent == Event.ARRIVAL) {
+            timeHighway.times[position] = currentTime + arrivalRate.sample();
+        } else if (nextEvent == Event.MERGE && timeHighway.nextVehicleRamp() != null) {
+            timeHighway.times[position] = currentTime + mergeRate.sample();
+        } else if (nextEvent == Event.LANE1 && timeHighway.nextVehicleLeftLane() != null) {
+            if (currentTime - timeHighway.nextVehicleLeftLane().startTime > currentHighway.getLength() / travelRate) {
+                timeHighway.times[position] = currentTime + mergeRate.sample();
+            } else {
+                timeHighway.times[position] = currentTime + mergeRate.sample();
+            }
+        } else if (timeHighway.nextVehicleRightLane() != null) {
+            if (currentTime - timeHighway.nextVehicleRightLane().startTime > currentHighway.getLength() / travelRate) {
+                timeHighway.times[position] = currentTime + mergeRate.sample();
+            } else {
+                timeHighway.times[position] = currentTime + currentHighway.getLength() / travelRate
+                        - timeHighway.nextVehicleRightLane().startTime;
+            }
+        }
+        return nextEvent;
+    }
+
+    private void doNextEvent(Event event) {
+        if (event == Event.LANE1 && currentHighway.nextVehicleLeftLane() != null) {
+            advanceHighway(event);
+        } else if (event == Event.LANE2 && currentHighway.nextVehicleRightLane() != null) {
+            advanceHighway(event);
+        } else if (event == Event.MERGE && currentHighway.nextVehicleRamp() != null) {
+            merge();
+        } else {
+            enterOnRamp();
+        }
+    }
+
+    private void advanceHighway(Event event) {
+        if (event == Event.LANE1) {
+            if (nextHighway == currentHighway.nextVehicleLeftLane().endPoint) {
+                if (nextHighway.getRightLaneRemainingSpace() >= currentHighway.nextVehicleLeftLane()
+                        .getVehicleLength()) {
+                    currentHighway.nextVehicleLeftLane().updateDistanceTraveled(currentHighway.getLength());
+                    currentHighway.nextVehicleLeftLane().setSegmentTime(currentTime);
+                    nextHighway.enqueueRightLane(currentHighway.dequeueLeftLane());
+                }
+            } else {
+                if (nextHighway.getLeftLaneRemainingSpace() < nextHighway.getRightLaneRemainingSpace() && nextHighway
+                        .getLeftLaneRemainingSpace() >= currentHighway.nextVehicleLeftLane().getVehicleLength()) {
+                    currentHighway.nextVehicleLeftLane().updateDistanceTraveled(currentHighway.getLength());
+                    currentHighway.nextVehicleLeftLane().setSegmentTime(currentTime);
+                    nextHighway.enqueueLeftLane(currentHighway.dequeueLeftLane());
+                } else if (nextHighway.getRightLaneRemainingSpace() >= currentHighway.nextVehicleLeftLane()
+                        .getVehicleLength()) {
+                    currentHighway.nextVehicleLeftLane().updateDistanceTraveled(currentHighway.getLength());
+                    currentHighway.nextVehicleLeftLane().setSegmentTime(currentTime);
+                    nextHighway.enqueueRightLane(currentHighway.dequeueLeftLane());
+                }
+            }
+        }
+        if (event == Event.LANE2) {
+            if (currentHighway == currentHighway.nextVehicleRightLane().getEndPoint()
+                    || currentHighway.index == highways.length - 1) {
+                currentHighway.nextVehicleRightLane().updateDistanceTraveled(currentHighway.getLength());
+                currentHighway.nextVehicleRightLane().setEndTime(currentTime);
+                currentHighway.enqueueRamp(currentHighway.dequeueRightLane());
+            } else if (nextHighway == currentHighway.nextVehicleRightLane().getEndPoint()) {
+                if (nextHighway.getRightLaneRemainingSpace() >= currentHighway.nextVehicleRightLane()
+                        .getVehicleLength()) {
+                    currentHighway.nextVehicleRightLane().updateDistanceTraveled(currentHighway.getLength());
+                    currentHighway.nextVehicleRightLane().setSegmentTime(currentTime);
+                    nextHighway.enqueueRightLane(currentHighway.dequeueRightLane());
+                }
+            } else {
+                if (nextHighway.getLeftLaneRemainingSpace() < nextHighway.getRightLaneRemainingSpace() && nextHighway
+                        .getLeftLaneRemainingSpace() >= currentHighway.nextVehicleRightLane().getVehicleLength()) {
+                    currentHighway.nextVehicleRightLane().updateDistanceTraveled(currentHighway.getLength());
+                    currentHighway.nextVehicleRightLane().setSegmentTime(currentTime);
+                    nextHighway.enqueueLeftLane(currentHighway.dequeueRightLane());
+                } else if (nextHighway.getRightLaneRemainingSpace() >= currentHighway.nextVehicleRightLane()
+                        .getVehicleLength()) {
+                    currentHighway.nextVehicleRightLane().updateDistanceTraveled(currentHighway.getLength());
+                    currentHighway.nextVehicleRightLane().setSegmentTime(currentTime);
+                    nextHighway.enqueueRightLane(currentHighway.dequeueRightLane());
+                }
+            }
         }
 
+    }
+
+    private void merge() {
+        if (currentHighway.getRightLaneRemainingSpace() >= currentHighway.nextVehicleRamp().getVehicleLength()) {
+            currentHighway.nextVehicleRamp().setSegmentTime(currentTime);
+            currentHighway.enqueueRightLane(currentHighway.dequeueRamp());
+        }
+    }
+
+    private void enterOnRamp() {
+        if (currentHighway.hasOnRamp()) {
+            currentHighway.enqueueRamp(arrival.nextVehicle(currentTime, currentHighway, getExitHighway()));
+        }
+    }
+
+    private GenericQueue<Highway> getOffRamps() {
+        GenericQueue<Highway> offRamps = new GenericQueue<>();
+
+        for (int i = 0; i < highways.length; i++) {
+            if (!highways[i].hasOnRamp()) {
+                offRamps.enqueue(highways[i]);
+            }
+        }
+        return offRamps;
+    }
+
+    private Highway getExitHighway() {
+        GenericQueue<Highway> offRamps = new GenericQueue<>();
+
+        for (int i = 0; i < highways.length; i++) {
+            if (highways[i].index > currentHighway.index && !highways[i].hasOnRamp()) {
+                offRamps.enqueue(highways[i]);
+            }
+        }
+
+        Highway exitHighway = offRamps.getHead();
+        int index = getRandomInt(offRamps.length);
+        for (int i = 0; i <= index; i++) {
+            exitHighway = offRamps.dequeue();
+        }
+        return exitHighway;
     }
 
     public static int getRandomInt(int max) {
@@ -220,8 +210,10 @@ public class Simulation {
         double averageDistanceValues = 0;
         double totalPeopleTravelled = 0;
         Vehicle currentVehicle;
-        for (int i = 0; i < highwaysWithOffRamps.length; i++) {
-            while ((currentVehicle = highwaysWithOffRamps[i].dequeueRamp()) != null) {
+        Highway processHighway;
+        GenericQueue<Highway> offRamps = getOffRamps();
+        while ((processHighway = offRamps.dequeue()) != null) {
+            while ((currentVehicle = processHighway.dequeueRamp()) != null) {
                 // System.out.println(currentVehicle.toString());
                 averageSpeedTotal += currentVehicle.getAverageSpeed();
                 averageSpeedValues++;

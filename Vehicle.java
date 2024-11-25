@@ -7,6 +7,7 @@ public class Vehicle {
     double startTime;
     double endTime;
     double distanceTraveled;
+    double segmentTime;
 
     public Vehicle(int passengerCount, Highway startPoint, Highway endPoint, double startTime) {
         this.passengerCount = passengerCount;
@@ -15,8 +16,16 @@ public class Vehicle {
         this.startTime = startTime;
     };
 
+    public double getSegmentTime() {
+        return segmentTime;
+    }
+
+    public void setSegmentTime(double time) {
+        segmentTime = time;
+    }
+
     public String toString() {
-        return (startTime + ", " + endTime + ", " + distanceTraveled);
+        return (startTime + ", " + endTime);
     }
 
     public Highway getStartPoint() {

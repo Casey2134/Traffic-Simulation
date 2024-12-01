@@ -1,13 +1,17 @@
 public class Arrival {
     // Decides How Many Passengers Vehicles Have
-    private Normal n;
-    // Decides What Type of Vehicle
+    private Normal car;
+    private Normal bus;
     private int busesLeft;
     private double timeLeftToBuses;
+    private double intervalForBuses;
 
     // Custom Constructor (For Changing Arrival Rates)
-    public Arrival(double timeLeftToBuses) {
-        this.timeLeftToBuses = timeLeftToBuses;
+    public Arrival(double intervalForBuses) {
+        bus = new Normal((Bus.getMaxPassengers() / 2), 1);
+        car = new Normal((Car.getMaxPassengers() / 2), 1);
+        this.intervalForBuses = intervalForBuses;
+        timeLeftToBuses = intervalForBuses;
     }
 
     // Creation Method For Vehicle
@@ -16,16 +20,14 @@ public class Arrival {
         int passengers;
         if(currentTime > timeLeftToBuses){
             busesLeft = totalHighways;
-            timeLeftToBuses += timeLeftToBuses;
+            timeLeftToBuses += intervalForBuses;
         }
         if(busesLeft > 0){
-            n = new Normal((Bus.getMaxPassengers() / 2), 1);
-            passengers = (int) n.sample();
+            passengers = (int) bus.sample();
             vehicle = new Bus(passengers, highway, exitHighway, currentTime);
             busesLeft--;
         } else{
-            n = new Normal((Car.getMaxPassengers() / 2), 1);
-            passengers = (int) n.sample();
+            passengers = (int) car.sample();
             vehicle = new Car(passengers, highway, exitHighway, currentTime);
         }
         return (vehicle);

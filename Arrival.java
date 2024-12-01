@@ -6,9 +6,8 @@ public class Arrival {
     private double timeLeftToBuses;
 
     // Custom Constructor (For Changing Arrival Rates)
-    public Arrival() {
-        e = new Exponential(1);
-        timeLeftToBuses = 60.0;
+    public Arrival(double timeLeftToBuses) {
+        this.timeLeftToBuses = timeLeftToBuses;
     }
 
     // Creation Method For Vehicle
@@ -17,7 +16,7 @@ public class Arrival {
         int passengers;
         if(currentTime > timeLeftToBuses){
             busesLeft = totalHighways;
-            timeLeftToBuses += 60;
+            timeLeftToBuses += timeLeftToBuses;
         }
         if(busesLeft > 0){
             n = new Normal((Bus.getMaxPassengers() / 2), 1);

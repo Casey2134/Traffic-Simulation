@@ -7,7 +7,6 @@ public class Arrival {
 
     // Custom Constructor (For Changing Arrival Rates)
     public Arrival() {
-        e = new Exponential(1);
         timeLeftToBuses = 60.0;
     }
 

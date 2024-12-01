@@ -5,10 +5,10 @@ public class Arrival {
     private int busesLeft;
     private double timeLeftToBuses;
     private double intervalForBuses;
+    private int totalBusPassengers = 0;
 
-    // Custom Constructor (For Changing Arrival Rates)
     public Arrival(double intervalForBuses) {
-        bus = new Normal((Bus.getMaxPassengers() / 2), 1);
+        bus = new Normal((Bus.getMaxPassengers() / 2), 3);
         car = new Normal((Car.getMaxPassengers() / 2), 1);
         this.intervalForBuses = intervalForBuses;
         timeLeftToBuses = intervalForBuses;
@@ -24,10 +24,15 @@ public class Arrival {
         }
         if(busesLeft > 0){
             passengers = (int) bus.sample();
+            totalBusPassengers += passengers;
             vehicle = new Bus(passengers, highway, exitHighway, currentTime);
             busesLeft--;
         } else{
             passengers = (int) car.sample();
+            if(totalBusPassengers > 0){
+                totalBusPassengers -= passengers;
+                return(null);
+            }
             vehicle = new Car(passengers, highway, exitHighway, currentTime);
         }
         return (vehicle);

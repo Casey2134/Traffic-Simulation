@@ -7,14 +7,18 @@ public class Simulation {
 
     double currentTime = 0;
     double totalTime = 0;
-    double[] highwayLengths = new double[] { 600000, 26000, 2500, 5000, 10000, 30000, 1000, 6000, 20000, 1000 };
-    boolean[] hasOnRamp = new boolean[] { true, false, true, false, false, true, true, false, true, false };
+    double[] highwayLengths = new double[] { 1584, 190, 5280, 20064, 75, 17952, 1584, 6864, 2112, 1584, 1584, 1056, 528,
+            3696, 2112, 1056, 528, 3168, 528, 2112, 1056, 2640, 528, 1584, 1584, 4752, 1584, 57552, 2640, 3168, 354,
+            2640, 2640, 19536, 499, 15312, 364, 7392 };
+    boolean[] hasOnRamp = new boolean[] { true, false, true, false, true, false, true, false, true, false, true, true,
+            false, true, false, false, true, false, true, false, true, false, true, false, true, false, true, false,
+            true, false, true, false, true, false, true, false, true, false };
     Highway[] highways = new Highway[highwayLengths.length];
     Highway currentHighway;
     Highway nextHighway;
 
     Arrival arrival = new Arrival();
-    Exponential arrivalRate = new Exponential(1);
+    Exponential arrivalRate = new Exponential(0.67);
     Normal mergeRate = new Normal(4, 1);
 
     // iterates through the highways in the array until the time is up
@@ -69,9 +73,10 @@ public class Simulation {
         }
         if (nextEvent == Event.ARRIVAL) {
             timeHighway.times[position] = currentTime + arrivalRate.sample();
+        } else if (nextEvent == Event.MERGE) {
+            timeHighway.times[position] = currentTime + mergeRate.sample();
         } else {
-            timeHighway.times[position] = currentTime + arrivalRate.sample();
-            System.out.println(arrivalRate.sample());
+            timeHighway.times[position] = currentTime + 0.5;
         }
         return nextEvent;
     }

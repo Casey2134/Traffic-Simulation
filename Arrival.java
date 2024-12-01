@@ -26,7 +26,7 @@ public class Arrival {
     public Vehicle nextVehicle(double currentTime, Highway highway, Highway exitHighway) {
         Vehicle vehicle;
         int passengers;
-        if (random.nextInt(100) > 30) { // For now, it is an 90% chance to be a car and a 10% chance to be a bus
+        if (random.nextInt(100) > 10) { // For now, it is an 90% chance to be a car and a 10% chance to be a bus
             n = new Normal((Car.getMaxPassengers() / 2), 1);
             passengers = (int) n.sample();
             vehicle = new Car(passengers, highway, exitHighway, currentTime); // passengers, start point, destination

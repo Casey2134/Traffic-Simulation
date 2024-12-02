@@ -6,20 +6,22 @@ public class Arrival {
     private double timeLeftToBuses;
     private double intervalForBuses;
     private int totalBusPassengers = 0;
+    private int numberOfBuses;
 
-    public Arrival(double intervalForBuses) {
+    public Arrival(double intervalForBuses, int numberOfBuses) {
+        bus = new Normal((22 / 2), 3);
+        car = new Normal((5 / 2), 1);
+        this.numberOfBuses = numberOfBuses;
         this.intervalForBuses = intervalForBuses;
-        timeLeftToBuses = intervalForBuses;
+        timeLeftToBuses = 0;
     }
 
     // Creation Method For Vehicle
-    public Vehicle nextVehicle(double currentTime, Highway highway, Highway exitHighway, int totalHighways) {
-        bus = new Normal((Bus.getMaxPassengers() / 2), 3);
-        car = new Normal((Car.getMaxPassengers() / 2), 1);
+    public Vehicle nextVehicle(double currentTime, Highway highway, Highway exitHighway) {
         Vehicle vehicle;
         int passengers;
-        if (currentTime > timeLeftToBuses) {
-            busesLeft = totalHighways;
+        if (currentTime >= timeLeftToBuses) {
+            busesLeft = numberOfBuses;
             timeLeftToBuses += intervalForBuses;
         }
         if (busesLeft > 0) {

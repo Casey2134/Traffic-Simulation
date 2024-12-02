@@ -21,19 +21,19 @@ public class Simulation {
     Highway currentHighway;
     Highway nextHighway;
 
-    Arrival arrival = new Arrival(1800);
-    Exponential arrivalRate = new Exponential(0.01);
-    Normal mergeRate = new Normal(8, 3);
+    Arrival arrival = new Arrival(1800, 30);
+    Exponential arrivalRate = new Exponential(0.21);
+    Normal mergeRate = new Normal(5, 3);
 
     // iterates through the highways in the array until the time is up
-    public void run(double time) {
+    public double[] run(double time) {
         totalTime = time;
         for (int i = 0; i < highways.length; i++) {
             Highway highway = new Highway(highwayLengths[i], hasOnRamp[i], i);
             highways[i] = highway;
         }
         doLoop();
-        getData();
+        return getData();
     }
 
     private void doLoop() {
@@ -179,7 +179,7 @@ public class Simulation {
     private void enterOnRamp() {
         if (currentHighway.hasOnRamp()) {
 
-            Vehicle vehicle = arrival.nextVehicle(currentTime, nextHighway, getExitHighway(), numOfHighways);
+            Vehicle vehicle = arrival.nextVehicle(currentTime, nextHighway, getExitHighway());
             if (vehicle != null) {
                 currentHighway.enqueueRamp(vehicle);
                 vehiclesGenerated++;
@@ -231,14 +231,17 @@ public class Simulation {
 
     private double getMinTimeOnHighway(Highway highway) {
         // System.out.println(highway.getLength() / 95.333);
-        return (highway.getLength() / 95.333);
+        return (highway.getLength() / 95.333) + mergeRate.sample();
     }
 
-    private void getData() {
+    public double[] getData() {
+
         double averageSpeedTotal = 0;
         double averageSpeedValues = 0;
         double averageTimeValues = 0;
         double averageTimeTotal = 0;
+        double totalBusPassengers = 0;
+        double totalCarPassengers = 0;
         double numOfBusses = 0;
         double numOfCars = 0;
         double numOfVehicles = 0;
@@ -260,27 +263,19 @@ public class Simulation {
                 totalPeopleTravelled += currentVehicle.getPassengers();
                 if (currentVehicle.getVehicleLength() == 30) {
                     numOfBusses++;
+                    totalBusPassengers += currentVehicle.getPassengers();
                 } else {
                     numOfCars++;
+                    totalCarPassengers += currentVehicle.getPassengers();
                 }
                 numOfVehicles++;
 
             }
         }
-
-        System.out.println(
-                "Average distance travelled: " + (averageDistanceTotal / averageDistanceValues) / 5280 + " miles");
-        System.out.println("Time Run = " + (totalTime / 60) + " minutes");
-        System.out.println("Time Run = " + (totalTime / 60) / 60 + " hours");
-        System.out.println("Average Time Travelled = " + ((averageTimeTotal / averageTimeValues) / 60) + " minutes");
-        System.out.println("Average Time Travelled = " + ((averageTimeTotal / averageTimeValues) / 60) / 60 + " hours");
-        System.out.println("Average speed: " + (averageSpeedTotal / averageSpeedValues) * 0.68 + " mph");
-        System.out.println("Total vehicles: " + numOfVehicles);
-        System.out.println("Number of cars: " + numOfCars);
-        System.out.println("Number of busses: " + numOfBusses);
-        System.out.println("Total passengers travelled: " + totalPeopleTravelled);
-        System.out.println("Vehicles generated: " + vehiclesGenerated);
-        System.out.println("Percentage of Cars " + numOfCars / numOfVehicles * 100 + "%");
+        double[] data = new double[] { averageSpeedTotal, averageSpeedValues, averageTimeValues, averageTimeTotal,
+                totalBusPassengers, totalCarPassengers, numOfBusses, numOfCars, numOfVehicles, averageDistanceTotal,
+                averageDistanceValues, totalPeopleTravelled, totalTime };
+        return data;
 
     }
 

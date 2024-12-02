@@ -1,6 +1,6 @@
 public class Main {
     public static void main(String[] args) {
         Simulation simulation = new Simulation();
-        simulation.run(18000);
+        simulation.run(86400);
     }
 }

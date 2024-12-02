@@ -9,20 +9,21 @@ public class Simulation {
     int vehiclesGenerated = 0;
     double currentTime = 0;
     double totalTime = 0;
-    double[] highwayLengths = new double[] { 1584, 190, 5280, 20064, 75, 17952, 1584, 6864, 2112, 1584, 1584, 1056, 528,
+    double[] highwayLengths = new double[] { 1584, 190, 5280, 20139, 17952, 1584, 6864, 2112, 1584, 1584, 1056,
+            528,
             3696, 2112, 1056, 528, 3168, 528, 2112, 1056, 2640, 528, 1584, 1584, 4752, 1584, 57552, 2640, 3168, 354,
             2640, 2640, 19536, 499, 15312, 364, 7392 };
     int numOfHighways = highwayLengths.length;
-    boolean[] hasOnRamp = new boolean[] { true, false, true, false, true, false, true, false, true, false, true, true,
+    boolean[] hasOnRamp = new boolean[] { true, false, true, false, false, true, false, true, false, true, true,
             false, true, false, false, true, false, true, false, true, false, true, false, true, false, true, false,
             true, false, true, false, true, false, true, false, true, false };
     Highway[] highways = new Highway[highwayLengths.length];
     Highway currentHighway;
     Highway nextHighway;
 
-    Arrival arrival = new Arrival();
+    Arrival arrival = new Arrival(1800);
     Exponential arrivalRate = new Exponential(0.01);
-    Normal mergeRate = new Normal(4, 1);
+    Normal mergeRate = new Normal(8, 3);
 
     // iterates through the highways in the array until the time is up
     public void run(double time) {
@@ -86,15 +87,15 @@ public class Simulation {
                             + (getMinTimeOnHighway(currentHighway)
                                     - (currentTime - currentHighway.nextVehicleLeftLane().segmentTime));
                 } else {
-                    timeHighway.times[position] = currentTime;
+                    timeHighway.times[position] = currentTime + 1;
                 }
-            } else if (nextEvent == Event.LANE2 && currentHighway.nextVehicleLeftLane() != null) {
+            } else if (nextEvent == Event.LANE2 && currentHighway.nextVehicleRightLane() != null) {
                 if (currentTime
                         - currentHighway.nextVehicleRightLane().segmentTime < getMinTimeOnHighway(currentHighway)) {
                     timeHighway.times[position] = currentTime + (getMinTimeOnHighway(currentHighway)
                             - (currentTime - currentHighway.nextVehicleRightLane().segmentTime));
                 } else {
-                    timeHighway.times[position] = currentTime;
+                    timeHighway.times[position] = currentTime + 1;
                 }
             } else {
                 timeHighway.times[position] = currentTime + getMinTimeOnHighway(currentHighway);
@@ -109,9 +110,6 @@ public class Simulation {
         } else if (event == Event.LANE2 && currentHighway.nextVehicleRightLane() != null) {
             advanceHighway(event);
         } else if (event == Event.MERGE && currentHighway.nextVehicleRamp() != null) {
-            System.out.println(
-                    currentHighway.getLeftLaneRemainingSpace() + "  ,  " + currentHighway.getLength() + "  ,  "
-                            + currentHighway.getRightLaneRemainingSpace());
             merge();
         } else {
             enterOnRamp();
@@ -155,7 +153,7 @@ public class Simulation {
                     nextHighway.enqueueRightLane(currentHighway.dequeueRightLane());
                 }
             } else {
-                if (nextHighway.getLeftLaneRemainingSpace() < nextHighway.getRightLaneRemainingSpace() && nextHighway
+                if (nextHighway.getLeftLaneRemainingSpace() > nextHighway.getRightLaneRemainingSpace() && nextHighway
                         .getLeftLaneRemainingSpace() >= currentHighway.nextVehicleRightLane().getVehicleLength()) {
                     currentHighway.nextVehicleRightLane().updateDistanceTraveled(currentHighway.getLength());
                     currentHighway.nextVehicleRightLane().segmentTime = currentTime;
@@ -180,15 +178,14 @@ public class Simulation {
 
     private void enterOnRamp() {
         if (currentHighway.hasOnRamp()) {
-            Vehicle vehicle = arrival.nextVehicle(currentTime, nextHighway, getExitHighway());
-            if (vehicle.endPoint == null || vehicle.endPoint.index < vehicle.startPoint.index) {
-                System.out.println("Error");
-            }
 
-            currentHighway
-                    .enqueueRamp(vehicle);
-            vehiclesGenerated++;
+            Vehicle vehicle = arrival.nextVehicle(currentTime, nextHighway, getExitHighway(), numOfHighways);
+            if (vehicle != null) {
+                currentHighway.enqueueRamp(vehicle);
+                vehiclesGenerated++;
+            }
         }
+
     }
 
     private GenericQueue<Highway> getOffRamps() {
@@ -283,6 +280,7 @@ public class Simulation {
         System.out.println("Number of busses: " + numOfBusses);
         System.out.println("Total passengers travelled: " + totalPeopleTravelled);
         System.out.println("Vehicles generated: " + vehiclesGenerated);
+        System.out.println("Percentage of Cars " + numOfCars / numOfVehicles * 100 + "%");
 
     }
 

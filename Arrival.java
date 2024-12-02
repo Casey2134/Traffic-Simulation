@@ -1,47 +1,46 @@
-import java.util.Random;
-
 public class Arrival {
-    // Decides When Vehicles Are Created
-    private Exponential e;
     // Decides How Many Passengers Vehicles Have
-    private Normal n;
-    // Decides What Type of Vehicle
-    private Random random;
-    // Decides When Vehicle is Created
-    private double nextVehicle;
+    private Normal car;
+    private Normal bus;
+    private int busesLeft;
+    private double timeLeftToBuses;
+    private double intervalForBuses;
+    private int totalBusPassengers = 0;
 
-    // Basic Constructor
-    public Arrival() {
-        this(1);
-    }
-
-    // Custom Constructor (For Changing Arrival Rates)
-    public Arrival(double arrivalRate) {
-        e = new Exponential(arrivalRate);
-        random = new Random();
-        nextVehicle = e.sample();
+    public Arrival(double intervalForBuses) {
+        this.intervalForBuses = intervalForBuses;
+        timeLeftToBuses = intervalForBuses;
     }
 
     // Creation Method For Vehicle
-    public Vehicle nextVehicle(double currentTime, Highway highway, Highway exitHighway) {
+    public Vehicle nextVehicle(double currentTime, Highway highway, Highway exitHighway, int totalHighways) {
+        bus = new Normal((Bus.getMaxPassengers() / 2), 3);
+        car = new Normal((Car.getMaxPassengers() / 2), 1);
         Vehicle vehicle;
         int passengers;
-        if (random.nextInt(100) > 10) { // For now, it is an 90% chance to be a car and a 10% chance to be a bus
-            n = new Normal((Car.getMaxPassengers() / 2), 1);
-            passengers = (int) n.sample();
-            vehicle = new Car(passengers, highway, exitHighway, currentTime); // passengers, start point, destination
-        } else {
-            n = new Normal((Bus.getMaxPassengers() / 2), 1);
-            passengers = (int) n.sample();
-            vehicle = new Bus(passengers, highway, exitHighway, currentTime); // passengers, start point, destination
+        if (currentTime > timeLeftToBuses) {
+            busesLeft = totalHighways;
+            timeLeftToBuses += intervalForBuses;
         }
-        nextVehicle = currentTime + e.sample();
+        if (busesLeft > 0) {
+            passengers = (int) Math.round(bus.sample());
+            if (passengers <= 0) {
+                passengers = 1;
+            }
+            totalBusPassengers += passengers;
+            vehicle = new Bus(passengers, highway, exitHighway, currentTime);
+            busesLeft--;
+        } else {
+            passengers = (int) Math.round(car.sample());
+            if (passengers <= 0) {
+                passengers = 1;
+            }
+            if (totalBusPassengers > 0) {
+                totalBusPassengers -= passengers;
+                return (null);
+            }
+            vehicle = new Car(passengers, highway, exitHighway, currentTime);
+        }
         return (vehicle);
     }
-
-    // Get Method for Next Vehicle Creation Time
-    public double getNextVehicleTime() {
-        return (nextVehicle);
-    }
-
 }

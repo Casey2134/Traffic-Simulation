@@ -25,7 +25,7 @@ public class Arrival {
             timeLeftToBuses += intervalForBuses;
         }
         if(busesLeft > 0){
-            passengers = (int) bus.sample();
+            passengers = (int) Math.round(bus.sample());
             if(passengers <= 0){
                 passengers = 1;
             }
@@ -33,7 +33,7 @@ public class Arrival {
             vehicle = new Bus(passengers, highway, exitHighway, currentTime);
             busesLeft--;
         } else{
-            passengers = (int) car.sample();
+            passengers = (int) Math.round(car.sample());
             if(passengers <= 0){
                 passengers = 1;
             }

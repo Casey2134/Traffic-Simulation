@@ -10,7 +10,7 @@ public class Main {
         final int numOfRuns = 100;
         int simulationBuses = 100;
         double simulationTime = 18000;
-        double[][] dataCollection = new double[numOfRuns][10];
+        double[][] dataCollection = new double[numOfRuns][dataNames.length];
         for (int i = 0; i < numOfRuns; i++) {
             Simulation simulation = new Simulation();
             dataCollection[i] = simulation.run(simulationTime, 1800, simulationBuses * i / numOfRuns);
